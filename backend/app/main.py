@@ -7,6 +7,7 @@ from app.api.health import router as health_router
 from app.api.articles import router as articles_router
 from app.api.websites import router as websites_router
 from app.api.v1.websites import router as v1_websites_router
+from app.api.v1.search import router as v1_search_router
 from app.integrations.wordpress.endpoints import router as wordpress_router
 from app.core.config import settings
 
@@ -30,6 +31,7 @@ app.include_router(health_router)
 app.include_router(articles_router)
 app.include_router(websites_router)
 app.include_router(v1_websites_router)
+app.include_router(v1_search_router)
 app.include_router(wordpress_router)
 
 @app.get("/")
