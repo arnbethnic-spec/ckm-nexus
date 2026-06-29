@@ -3,10 +3,10 @@ from uuid import UUID
 from typing import Optional, Dict, Any
 from urllib.parse import urlparse
 import requests
-from cryptography.fernet import Fernet
 from sqlalchemy.orm import Session
 from app.models.website import Website
 from app.repositories.website_repository import WebsiteRepository
+from app.security.encryption import get_encryption_service
 from app.core.config import settings
 from app.core.logging import logger
 
@@ -22,20 +22,7 @@ class WebsiteService:
         """
         self.db = db
         self.repository = WebsiteRepository(db)
-        # For encryption/decryption - in production, load from environment
-        self.cipher = Fernet(self._get_encryption_key())
-    
-    def _get_encryption_key(self) -> bytes:
-        """Get encryption key.
-        
-        In production, this should be loaded from environment or a secure key management service.
-        
-        Returns:
-            Encryption key as bytes
-        """
-        # For development, generate a test key
-        # In production, use: key = os.getenv("ENCRYPTION_KEY").encode()
-        return Fernet.generate_key()
+        self.encryption_service = get_encryption_service()
     
     def _encrypt_password(self, password: str) -> str:
         """Encrypt a password.
@@ -46,8 +33,7 @@ class WebsiteService:
         Returns:
             Encrypted password as string
         """
-        encrypted = self.cipher.encrypt(password.encode())
-        return encrypted.decode()
+        return self.encryption_service.encrypt(password)
     
     def _decrypt_password(self, encrypted_password: str) -> str:
         """Decrypt a password.
@@ -58,8 +44,7 @@ class WebsiteService:
         Returns:
             Decrypted password
         """
-        decrypted = self.cipher.decrypt(encrypted_password.encode())
-        return decrypted.decode()
+        return self.encryption_service.decrypt(encrypted_password)
     
     def validate_url(self, url: str) -> bool:
         """Validate WordPress site URL.
