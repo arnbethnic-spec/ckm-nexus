@@ -5,6 +5,7 @@ from app.database.base import Base
 from app.database.session import engine
 from app.api.health import router as health_router
 from app.api.articles import router as articles_router
+from app.api.websites import router as websites_router
 from app.integrations.wordpress.endpoints import router as wordpress_router
 from app.core.config import settings
 
@@ -26,6 +27,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(articles_router)
+app.include_router(websites_router)
 app.include_router(wordpress_router)
 
 @app.get("/")
