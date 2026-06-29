@@ -1,7 +1,9 @@
 """WordPress API endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.integrations.wordpress.client import WordPressClient
 from app.integrations.wordpress.auth import WordPressAuth
+from app.database.session import get_db
+from app.services.wordpress_sync import WordPressSyncService
 
 router = APIRouter(prefix="/wordpress", tags=["wordpress"])
 
@@ -70,5 +72,20 @@ def get_wordpress_tags(
         client = WordPressClient(site_url, username, password)
         tags = client.get_tags()
         return {"data": tags}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/sync")
+def sync_wordpress_posts(
+    site_url: str,
+    username: str,
+    password: str,
+    db=Depends(get_db)
+):
+    """Sync WordPress posts to database."""
+    try:
+        sync_service = WordPressSyncService(db)
+        result = sync_service.sync_posts(site_url, username, password)
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
